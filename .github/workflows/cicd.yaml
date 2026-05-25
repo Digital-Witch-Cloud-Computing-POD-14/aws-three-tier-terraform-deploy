@@ -9,11 +9,11 @@ permissions:
     id-token: write
 jobs:
   deploy-iac:
-    runs-on: ubuntu-latest
+    runs-on: terraform
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_REGION: us-east-1
     steps:
       - name: Checkout repository.
         uses: actions/checkout@v2
@@ -33,11 +33,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             # Removed role-to-assume as requested
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3
         with:
-            cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-
+            terraform_wrapper: false
 
       - name: 'Install tfsec for security scanning'
         run: |
@@ -46,7 +44,7 @@ jobs:
           ./tfsec --version
 
       - name: 'Terraform Init'
-        run: terraform init
+        run: terraform init -reconfigure
 
       - name: 'Terraform Format'
         run: terraform fmt
@@ -59,34 +57,52 @@ jobs:
         run: ./tfsec . || true
 
       - name: Terraform Plan
-        run: terraform plan 
+        env:
+    # Adding 'TF_VAR_' tells Terraform to use this for var.cloudflare_api_token
+          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+        run: terraform plan
 
-      # - name: Terraform Apply.
-      #   run: terraform apply -auto-approve 
 
+      - name: 'Terraform Apply'
+        env:
+          TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+        run: terraform apply -auto-approve
+ 
 
         ## Note this part depends on the mannaul Dns route 53 to namecheap or godaddy setup.
         #===================================================================================
-      # - name: 'install kubectl'
-      #   run: |
-      #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      #     chmod +x ./kubectl
-      #     sudo mv ./kubectl /usr/local/bin/kubectl
+       #- name: 'install kubectl'
+        # run: |
+         # curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+         # chmod +x ./kubectl
+         # sudo mv ./kubectl /usr/local/bin/kubectl
 
-      # - name: 'authenticate to EKS Cluster'
-      #   run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1
+      #- name: 'authenticate to EKS Cluster'
+       # run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1
       
-      # - name: 'Deploying the ClusterIssuer to EKS'
-      #   run: kubectl apply -f ClusterIssuer.yaml
 
-      # - name: 'Deploying argocd ingress rule to EKS'
-      #   run: kubectl apply -f ingress-argocd.yaml -n argocd
+      #- name: 'Deploying the ClusterIssuer to EKS'
+       # run: kubectl apply -f ClusterIssuer.yaml
 
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve 
+      #- name: 'Deploying argocd ingress rule to EKS'
+       # run: kubectl apply -f ingress-argocd.yaml -n argocd
 
-
-
-
-
+      # - name: 'Terraform Destroy'
+        #env:
+          # You must pass the token and ID here too!
+          #TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          #TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          #AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          #AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          #AWS_REGION: 'us-east-1'
+        #run: terraform destroy -auto-approve
+        
 

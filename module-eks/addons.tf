@@ -1,5 +1,5 @@
 provider "helm" {
-  kubernetes = {
+  kubernetes {
     host                   = aws_eks_cluster.eks.endpoint
     cluster_ca_certificate = base64decode(aws_eks_cluster.eks.certificate_authority[0].data)
     token                  = data.aws_eks_cluster_auth.eks.token
@@ -27,13 +27,14 @@ resource "helm_release" "nginx_ingress" {
   timeout          = 600
   wait             = true
   atomic           = true
+  cleanup_on_fail  = true
   values           = [file("${path.module}/nginx-ingress-values.yaml")]
   depends_on       = [aws_eks_node_group.eks_node_group]
 }
 
 data "aws_lb" "nginx_ingress" {
   tags = {
-    "kubernetes.io/service-name" = "ingress-nginx/nginx-ingress-ingress-nginx-controller"
+    "kubernetes.io/service-name" = "ingress-nginx/nginx-ingress-controller"
   }
   depends_on = [helm_release.nginx_ingress]
 }
@@ -48,11 +49,13 @@ resource "helm_release" "cert_manager" {
   timeout          = 900
   wait             = true
   atomic           = true
+  cleanup_on_fail  = true
+  force_update     = true
 
-  set = [{
+  set {
     name  = "installCRDs"
     value = "true"
-  }]
+  }
 
   depends_on = [helm_release.nginx_ingress]
 }
@@ -67,6 +70,8 @@ resource "helm_release" "argocd" {
   timeout          = 900
   wait             = true
   atomic           = true
+  cleanup_on_fail  = true
+  force_update     = true
   values           = [file("${path.module}/argocd-values.yaml")]
   depends_on       = [helm_release.nginx_ingress, helm_release.cert_manager]
 }

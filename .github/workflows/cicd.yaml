@@ -49,6 +49,9 @@ jobs:
           sudo mv ./kubectl /usr/local/bin/kubectl
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+      - name: 'Clear terraform cache'
+        run: rm -rf .terraform .terraform.lock.hcl
+
       - name: 'Terraform Init'
         run: terraform init -reconfigure
 

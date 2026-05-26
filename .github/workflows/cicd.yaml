@@ -64,6 +64,16 @@ jobs:
       - name: 'tfsec Security Scan.'
         run: ./tfsec . || true
 
+      - name: 'Remove helm state entries'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+        run: |
+          terraform state rm module.eks-deployment.helm_release.nginx_ingress || true
+          terraform state rm module.eks-deployment.helm_release.cert_manager || true
+          terraform state rm module.eks-deployment.helm_release.argocd || true
+
       - name: Terraform Plan
         env:
           TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}

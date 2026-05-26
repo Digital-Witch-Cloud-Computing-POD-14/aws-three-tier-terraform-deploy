@@ -34,7 +34,7 @@ resource "helm_release" "nginx_ingress" {
 
 data "aws_lb" "nginx_ingress" {
   tags = {
-    "kubernetes.io/service-name" = "ingress-nginx/nginx-ingress-controller"
+    "kubernetes.io/cluster/production-eks-cluster" = "owned"
   }
   depends_on = [helm_release.nginx_ingress]
 }

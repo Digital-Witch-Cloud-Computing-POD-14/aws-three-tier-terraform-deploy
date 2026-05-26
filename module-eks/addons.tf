@@ -1,5 +1,5 @@
 provider "helm" {
-  kubernetes = {
+  kubernetes {
     host                   = aws_eks_cluster.eks.endpoint
     cluster_ca_certificate = base64decode(aws_eks_cluster.eks.certificate_authority[0].data)
     exec {
@@ -60,10 +60,10 @@ resource "helm_release" "cert_manager" {
   cleanup_on_fail  = true
   force_update     = true
 
-  set = [{
+  set {
     name  = "installCRDs"
     value = "true"
-  }]
+  }
 
   depends_on = [helm_release.nginx_ingress]
 }

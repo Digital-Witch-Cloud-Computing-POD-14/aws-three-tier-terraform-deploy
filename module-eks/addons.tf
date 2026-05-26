@@ -75,9 +75,9 @@ resource "helm_release" "argocd" {
   version          = "5.51.6"
   namespace        = "argocd"
   create_namespace = true
-  timeout          = 900
-  wait             = true
-  atomic           = true
+  timeout          = 1200
+  wait             = false
+  atomic           = false
   cleanup_on_fail  = true
   force_update     = true
   values           = [file("${path.module}/argocd-values.yaml")]

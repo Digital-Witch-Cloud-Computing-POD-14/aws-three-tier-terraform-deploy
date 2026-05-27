@@ -57,16 +57,6 @@ jobs:
       - name: 'tfsec Security Scan.'
         run: ./tfsec . || true
 
-      - name: 'Remove helm state entries'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'us-east-1'
-        run: |
-          terraform state rm module.eks-deployment.helm_release.nginx_ingress || true
-          terraform state rm module.eks-deployment.helm_release.cert_manager || true
-          terraform state rm module.eks-deployment.helm_release.argocd || true
-
       - name: Terraform Plan
         env:
           TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -75,17 +65,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'us-east-1'
         run: terraform plan
-
-      - name: 'Cleanup stuck helm releases'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'us-east-1'
-        run: |
-          aws eks update-kubeconfig --name production-eks-cluster --region us-east-1 || true
-          helm uninstall cert-manager -n cert-manager --ignore-not-found || true
-          helm uninstall nginx-ingress -n ingress-nginx --ignore-not-found || true
-          helm uninstall argocd -n argocd --ignore-not-found || true
 
       - name: 'Terraform Apply'
         env:
@@ -101,7 +80,6 @@ jobs:
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
       
       - name: 'authenticate to EKS Cluster'
         run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1

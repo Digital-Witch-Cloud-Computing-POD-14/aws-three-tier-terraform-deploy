@@ -75,14 +75,18 @@ jobs:
           AWS_REGION: 'us-east-1'
         run: terraform apply -auto-approve
 
-      - name: 'Install kubectl and helm'
+      - name: 'install kubectl'
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
       
-      - name: 'authenticate to EKS Cluster'
-        run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1
+      - name: 'Authenticate to EKS Cluster'
+        run: |
+         # This strips any invisible leading/trailing whitespace or newlines
+         CLEAN_NAME=$(echo "${{ vars.EKS_CLUSTER_NAME }}" | xargs)
+         aws eks update-kubeconfig --name "$CLEAN_NAME" --region us-east-1
+
       
       - name: 'Deploying the ClusterIssuer to EKS'
         run: kubectl apply -f ClusterIssuer.yaml

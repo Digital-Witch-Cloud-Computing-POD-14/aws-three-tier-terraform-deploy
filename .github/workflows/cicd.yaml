@@ -48,7 +48,16 @@ jobs:
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      
+      - name: 'authenticate to EKS Cluster'
+        run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1
+      
+      - name: 'Deploying the ClusterIssuer to EKS'
+        run: kubectl apply -f ClusterIssuer.yaml
 
+      - name: 'Deploying argocd ingress rule to EKS'
+        run: kubectl apply -f ingress-argocd.yaml -n argocd
+          
       - name: 'Clear terraform cache'
         run: rm -rf .terraform .terraform.lock.hcl
 
@@ -102,6 +111,15 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'us-east-1'
         run: terraform apply -auto-approve
+
+
+
+
+        
+
+
+
+
 
 
         

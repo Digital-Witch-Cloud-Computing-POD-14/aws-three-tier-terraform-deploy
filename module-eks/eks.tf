@@ -8,6 +8,13 @@ resource "aws_eks_cluster" "eks" {
         endpoint_private_access = true
     }
 
+# --- ADD THIS BLOCK HERE ---
+  access_config {
+    authentication_mode = "API_AND_CONFIG_MAP"
+    }
+  # ---------------------------
+
+
     depends_on = [
         aws_iam_role_policy_attachment.eks_cluster_policy,
         aws_iam_role_policy_attachment.eks_vpc_resource_controller_policy

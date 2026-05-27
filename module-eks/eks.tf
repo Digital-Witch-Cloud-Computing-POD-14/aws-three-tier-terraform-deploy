@@ -9,9 +9,11 @@ resource "aws_eks_cluster" "eks" {
     }
 
 # --- ADD THIS BLOCK HERE ---
-  access_config {
-    authentication_mode = "API_AND_CONFIG_MAP"
+    access_config {
+    authentication_mode                         = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
     }
+
   # ---------------------------
 
 

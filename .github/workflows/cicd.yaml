@@ -87,7 +87,16 @@ jobs:
          CLEAN_NAME=$(echo "${{ vars.EKS_CLUSTER_NAME }}" | xargs)
          aws eks update-kubeconfig --name "$CLEAN_NAME" --region us-east-1
 
-      
+      - name: Grant local user Admin access
+        run: |
+          aws eks create-access-entry --cluster-name "$CLEAN_NAME" \
+          --principal-arn arn:aws:iam::488850521901:user/terraform-user --type STANDARD
+
+          aws eks associate-access-policy --cluster-name "$CLEAN_NAME" \
+          --principal-arn arn:aws:iam::488850521901:user/terraform-user \
+          --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
+          --access-scope type=cluster
+
       - name: 'Deploying the ClusterIssuer to EKS'
         run: kubectl apply -f ClusterIssuer.yaml
 

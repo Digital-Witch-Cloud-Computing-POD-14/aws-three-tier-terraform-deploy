@@ -46,7 +46,7 @@ spec:
   tls:
   - hosts:
     - app.themainpod14.online
-    secretName: app-cloudwitches-online
+    secretName: app-themainpod14.online
   rules:
   - host: app.themainpod14.online
     http:

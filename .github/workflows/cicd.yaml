@@ -41,22 +41,6 @@ jobs:
           curl -sLo tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.11/tfsec-linux-amd64
           chmod +x tfsec
           ./tfsec --version
-
-      - name: 'Install kubectl and helm'
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x ./kubectl
-          sudo mv ./kubectl /usr/local/bin/kubectl
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      
-      - name: 'authenticate to EKS Cluster'
-        run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1
-      
-      - name: 'Deploying the ClusterIssuer to EKS'
-        run: kubectl apply -f ClusterIssuer.yaml
-
-      - name: 'Deploying argocd ingress rule to EKS'
-        run: kubectl apply -f ingress-argocd.yaml -n argocd
           
       - name: 'Clear terraform cache'
         run: rm -rf .terraform .terraform.lock.hcl
@@ -112,6 +96,22 @@ jobs:
           AWS_REGION: 'us-east-1'
         run: terraform apply -auto-approve
 
+      - name: 'Install kubectl and helm'
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      
+      - name: 'authenticate to EKS Cluster'
+        run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1
+      
+      - name: 'Deploying the ClusterIssuer to EKS'
+        run: kubectl apply -f ClusterIssuer.yaml
+
+      - name: 'Deploying argocd ingress rule to EKS'
+        run: kubectl apply -f ingress-argocd.yaml -n argocd
+
 
 
 
@@ -120,7 +120,7 @@ jobs:
 
 
 
-        
+
 
 
 

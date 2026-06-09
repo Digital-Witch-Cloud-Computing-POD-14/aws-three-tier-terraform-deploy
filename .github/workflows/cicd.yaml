@@ -94,7 +94,9 @@ jobs:
       #  run: kubectl apply -f ingress-argocd.yaml -n argocd
 
       - name: Remove Ghost LB from State
-        run: terraform state rm module.eks-deployment.data.aws_lb.nginx_ingress || true
+        run: |
+         terraform state rm module.eks-deployment.data.aws_lb.nginx_ingress || true
+         terraform state rm data.aws_lb.nginx_ingress || true
 
       - name: 'Terraform Destroy'
         env:

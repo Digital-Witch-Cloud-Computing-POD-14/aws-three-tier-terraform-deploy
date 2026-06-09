@@ -93,6 +93,9 @@ jobs:
       #- name: 'Deploying argocd ingress rule to EKS'
       #  run: kubectl apply -f ingress-argocd.yaml -n argocd
 
+      - name: Remove Ghost LB from State
+        run: terraform state rm module.eks-deployment.data.aws_lb.nginx_ingress || true
+
       - name: 'Terraform Destroy'
         env:
           TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}

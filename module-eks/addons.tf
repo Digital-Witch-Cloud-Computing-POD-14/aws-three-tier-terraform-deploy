@@ -40,12 +40,12 @@ resource "helm_release" "nginx_ingress" {
   depends_on       = [aws_eks_node_group.eks_node_group]
 }
 
-# data "aws_lb" "nginx_ingress" {
- # tags = {
- #   "kubernetes.io/cluster/production-eks-cluster" = "owned"
- # }
-  # depends_on = [helm_release.nginx_ingress]
-# }
+data "aws_lb" "nginx_ingress" {
+  tags = {
+    "kubernetes.io/cluster/production-eks-cluster" = "owned"
+  }
+  depends_on = [helm_release.nginx_ingress]
+}
 
 resource "helm_release" "cert_manager" {
   name             = "cert-manager"
